@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Shopkeeper's Assistant | Live stock, sales and shop status</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A simple tool for township shops: record sales, keep stock accurate and let customers see what is available before they travel.">
+  <meta name="theme-color" content="#070f1d">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+</head>
+<body>
+  <app-root></app-root>
+  <script>
+    // Apply the saved theme before Angular starts, so there is no flash. Dark is the default, as in CyberShield.
+    try {
+      if (localStorage.getItem('shopkeeper.theme') !== 'light') {
+        document.body.classList.add('theme-dark');
+      }
+    } catch (e) {
+      document.body.classList.add('theme-dark');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Keep Unix line endings for files that run on Linux (Docker, Render), even when checked out on Windows.
+* text=auto
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.py text eol=lf
+*.png binary

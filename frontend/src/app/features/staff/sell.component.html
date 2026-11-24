@@ -1,0 +1,146 @@
+<div class="page">
+  @if (confirmation(); as sale) {
+    <section class="card done" aria-live="polite">
+      <div class="done-head">
+        <span class="done-icon" aria-hidden="true"><fa-icon [icon]="icons.ok" /></span>
+        <div>
+          <h1>Sale recorded</h1>
+          <p class="muted">{{ time(sale.created_at) }} · {{ sale.cashier_name }}@if (sale.replayed) { · already recorded, not repeated }</p>
+        </div>
+        <strong class="done-total num">{{ money(sale.total_cents) }}</strong>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr><th>Product</th><th class="right">Qty</th><th class="right">Amount</th><th>Stock now</th></tr>
+          </thead>
+          <tbody>
+            @for (item of sale.items; track item.product_id) {
+              <tr>
+                <td>{{ item.product_name }}</td>
+                <td class="right num">{{ item.quantity }}</td>
+                <td class="right num">{{ money(item.line_total_cents) }}</td>
+                <td>
+                  @if (item.stock_state) {
+                    <span class="num">{{ item.stock_after }} left</span>
+                    <app-stock-badge [state]="item.stock_state" />
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <details class="receipt">
+        <summary>Receipt message</summary>
+        <pre>{{ receiptPreview() }}</pre>
+      </details>
+
+      <div class="row">
+        <button type="button" class="btn btn-primary btn-lg" (click)="newSale()"><fa-icon [icon]="icons.plus" /> New sale</button>
+        <button type="button" class="btn btn-lg" (click)="copyReceipt()"><fa-icon [icon]="icons.copy" /> Copy receipt message</button>
+      </div>
+    </section>
+  } @else {
+    <div class="page-heading">
+      <div>
+        <h1>Record a sale</h1>
+        <p>Tap a product to add it. Stock goes down as soon as you record the sale.</p>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="catalog" aria-label="Products">
+        <div class="toolbar">
+          <div class="search">
+            <fa-icon [icon]="icons.search" aria-hidden="true" />
+            <input type="search" placeholder="Search products" aria-label="Search products" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+          </div>
+          @if (categories().length > 1) {
+            <div class="chips" role="group" aria-label="Filter by category">
+              <button type="button" class="chip" [attr.aria-pressed]="category() === null" (click)="category.set(null)">All</button>
+              @for (name of categories(); track name) {
+                <button type="button" class="chip" [attr.aria-pressed]="category() === name" (click)="category.set(category() === name ? null : name)">{{ name }}</button>
+              }
+            </div>
+          }
+        </div>
+
+        @if (loading()) {
+          <app-skeleton [count]="4" [height]="84" />
+        } @else if (loadFailed()) {
+          <app-error-state message="We could not load the product list." (retry)="load()" />
+        } @else if (visible().length === 0) {
+          <app-empty-state title="No products match" message="Try a different search or category." />
+        } @else {
+          <ul class="tiles">
+            @for (product of visible(); track product.id) {
+              <li>
+                <button type="button" class="tile" [class.in-basket]="qty(product) > 0" [disabled]="product.stock_qty === 0 || qty(product) >= product.stock_qty" (click)="add(product)"
+                  [attr.aria-label]="'Add ' + product.name + ', ' + money(product.price_cents) + ', ' + product.stock_qty + ' in stock'">
+                  <span class="tile-name">{{ product.name }}</span>
+                  <span class="tile-price num">{{ money(product.price_cents) }}</span>
+                  <span class="tile-foot">
+                    <app-stock-badge [state]="product.stock_state" />
+                    @if (product.stock_qty > 0) { <small class="num">{{ product.stock_qty }} left</small> }
+                  </span>
+                  @if (qty(product) > 0) { <span class="tile-qty num" aria-hidden="true">×{{ qty(product) }}</span> }
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <aside class="basket card" [class.open]="basketOpen()" aria-label="Current sale">
+        <div class="basket-head">
+          <h2>Current sale</h2>
+          <div class="row">
+            @if (lines().length) { <button type="button" class="btn btn-ghost btn-sm" (click)="clear()">Clear</button> }
+            <button type="button" class="btn btn-sm sheet-close" (click)="basketOpen.set(false)">Hide</button>
+          </div>
+        </div>
+
+        @if (lines().length === 0) {
+          <p class="muted basket-empty">Nothing added yet. Tap a product to start.</p>
+        } @else {
+          <ul class="lines">
+            @for (line of lines(); track line.product.id) {
+              <li>
+                <div class="line-info">
+                  <strong>{{ line.product.name }}</strong>
+                  <small class="muted num">{{ money(line.product.price_cents) }} each</small>
+                </div>
+                <div class="stepper" role="group" [attr.aria-label]="'Quantity of ' + line.product.name">
+                  <button type="button" class="icon-btn" aria-label="Fewer" (click)="setQty(line.product, line.quantity - 1)"><fa-icon [icon]="icons.minus" /></button>
+                  <input type="number" inputmode="numeric" min="0" [max]="line.product.stock_qty" [value]="line.quantity" (change)="onQtyInput(line.product, $event)" aria-label="Quantity" />
+                  <button type="button" class="icon-btn" aria-label="More" [disabled]="line.quantity >= line.product.stock_qty" (click)="setQty(line.product, line.quantity + 1)"><fa-icon [icon]="icons.plus" /></button>
+                </div>
+                <span class="line-total num">{{ money(line.lineTotal) }}</span>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (saleError()) {
+          <p class="alert alert-danger" role="alert"><fa-icon [icon]="icons.alert" aria-hidden="true" /><span>{{ saleError() }}</span></p>
+        }
+
+        <div class="basket-foot">
+          <div class="total"><span>Total</span><strong class="num">{{ money(total()) }}</strong></div>
+          <button type="button" class="btn btn-primary btn-lg btn-block" [disabled]="lines().length === 0 || submitting()" [attr.aria-busy]="submitting()" (click)="submit()">
+            @if (submitting()) { <span class="spinner" aria-hidden="true"></span> Recording… } @else { <fa-icon [icon]="icons.check" /> Record sale }
+          </button>
+        </div>
+      </aside>
+    </div>
+
+    <button type="button" class="basket-bar" [class.visible]="(lines().length > 0 || saleError()) && !basketOpen()" (click)="basketOpen.set(true)" [attr.aria-expanded]="basketOpen()">
+      <span><fa-icon [icon]="icons.sell" /> {{ plural(units(), 'item') }}</span>
+      <strong class="num">{{ money(total()) }}</strong>
+      <span class="bar-action">Review</span>
+    </button>
+  }
+</div>

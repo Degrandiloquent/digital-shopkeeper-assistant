@@ -1,0 +1,14 @@
+<app-public-header />
+
+<main id="main" class="hero" tabindex="-1">
+  <div class="hero-inner">
+    <app-brand-mark [size]="76" />
+    <h1>Digital Shopkeeper's Assistant</h1>
+    <div class="cta">
+      <a class="btn btn-primary btn-lg" [routerLink]="['/shop', shopSlug]"><fa-icon [icon]="icons.store" /> Customer page</a>
+      <a class="btn btn-lg ghost-light" routerLink="/login">Staff &amp; owner sign in</a>
+    </div>
+  </div>
+</main>
+
+<app-public-footer />

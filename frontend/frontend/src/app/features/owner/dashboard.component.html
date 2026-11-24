@@ -1,0 +1,112 @@
+<div class="page">
+  <div class="page-heading">
+    <div>
+      <h1>{{ greeting() }}, {{ firstName() }}</h1>
+      <p>Here is how the shop is doing right now.</p>
+    </div>
+    <button type="button" class="btn" (click)="load()" [disabled]="loading()"><fa-icon [icon]="icons.refresh" /> Refresh</button>
+  </div>
+
+  @if (loading() && !data()) {
+    <div class="stack"><app-skeleton [count]="1" [height]="108" /><app-skeleton [count]="2" [height]="220" /></div>
+  } @else if (failed() && !data()) {
+    <app-error-state message="We could not load the dashboard." (retry)="load()" />
+  } @else if (data(); as d) {
+    @if (d.kpis.low_stock_count + d.kpis.out_of_stock_count > 0) {
+      <div class="alert alert-warn banner" role="status">
+        <fa-icon [icon]="icons.warning" aria-hidden="true" />
+        <span>
+          <strong>
+            @if (d.kpis.out_of_stock_count) { {{ plural(d.kpis.out_of_stock_count, 'product') }} out of stock }
+            @if (d.kpis.out_of_stock_count && d.kpis.low_stock_count) { and }
+            @if (d.kpis.low_stock_count) { {{ d.kpis.low_stock_count }} running low }
+          </strong>
+          <span> · Customers can see this on your page.</span> <a routerLink="/inventory">Restock now</a>
+        </span>
+      </div>
+    }
+
+    <section class="grid-metrics" aria-label="Key numbers">
+      <app-metric-card label="Today's sales" [value]="money(d.kpis.sales_today_cents)" [icon]="icons.money"
+        [supporting]="plural(d.kpis.sales_today_count, 'sale') + ' · ' + plural(d.kpis.units_sold_today, 'item')" tone="primary" />
+      <app-metric-card label="Low stock" [value]="d.kpis.low_stock_count" [icon]="icons.warning"
+        [supporting]="d.kpis.out_of_stock_count + ' out of stock'" [tone]="d.kpis.low_stock_count + d.kpis.out_of_stock_count ? 'warning' : 'healthy'" />
+      <app-metric-card label="Active products" [value]="d.kpis.active_products" [icon]="icons.inventory" supporting="On the sales screen" tone="primary" />
+      <article class="card status-card">
+        <div class="row-between"><span class="label">Shop status</span><a class="btn btn-sm" routerLink="/shop">Change</a></div>
+        <app-status-pill [status]="d.business.status" />
+        <small class="muted">{{ d.business.status_message || 'No message for customers.' }}</small>
+      </article>
+    </section>
+
+    <div class="grid-2 section">
+      <section class="card" aria-labelledby="chart-title">
+        <div class="card-head">
+          <div><h2 id="chart-title">Sales, last 7 days</h2><p>{{ money(weekTotal()) }} in total</p></div>
+        </div>
+        <svg viewBox="0 0 100 200" preserveAspectRatio="none" class="chart" role="img" [attr.aria-label]="'Sales per day: ' + chartSummary()">
+          <line x1="0" x2="100" y1="170" y2="170" class="axis" />
+          @for (bar of bars(); track bar.date) {
+            <rect [attr.x]="bar.x" [attr.y]="bar.y" [attr.width]="bar.width" [attr.height]="bar.height" rx="1.2" [class.today]="bar.is_today" class="bar" />
+          }
+        </svg>
+        <div class="chart-labels" aria-hidden="true">
+          @for (bar of bars(); track bar.date) {
+            <div [class.today]="bar.is_today"><strong class="num">{{ bar.total_cents ? short(bar.total_cents) : '–' }}</strong><span>{{ bar.is_today ? 'Today' : bar.label }}</span></div>
+          }
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="low-title">
+        <div class="card-head">
+          <div><h2 id="low-title">Needs restocking</h2><p>Products at or below their warning level</p></div>
+          <a class="btn btn-sm" routerLink="/inventory">Open inventory</a>
+        </div>
+        @if (d.low_stock_items.length === 0) {
+          <app-empty-state [icon]="icons.ok" title="All stocked up" message="Nothing is running low." />
+        } @else {
+          <ul class="plain">
+            @for (item of d.low_stock_items; track item.id) {
+              <li>
+                <div><strong>{{ item.name }}</strong><small class="muted">Warn at {{ item.low_stock_threshold }}</small></div>
+                <div class="right-cell"><strong class="num">{{ item.stock_qty }}</strong> <app-stock-badge [state]="item.stock_state" /></div>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="card" aria-labelledby="top-title">
+        <div class="card-head"><div><h2 id="top-title">Best sellers today</h2><p>By units sold</p></div></div>
+        @if (d.top_sellers_today.length === 0) {
+          <app-empty-state [icon]="icons.sell" title="No sales yet today" message="Sales you record will show up here." />
+        } @else {
+          <ol class="plain ranked">
+            @for (item of d.top_sellers_today; track item.product_id; let i = $index) {
+              <li><span class="rank num">{{ i + 1 }}</span><strong>{{ item.name }}</strong><span class="num muted">{{ item.quantity }} sold</span><span class="num">{{ money(item.revenue_cents) }}</span></li>
+            }
+          </ol>
+        }
+      </section>
+
+      <section class="card" aria-labelledby="recent-title">
+        <div class="card-head"><div><h2 id="recent-title">Recent sales</h2></div><a class="btn btn-sm" routerLink="/sales">All sales</a></div>
+        @if (d.recent_sales.length === 0) {
+          <app-empty-state [icon]="icons.receipt" title="No sales recorded" message="Recorded sales will be listed here." />
+        } @else {
+          <ul class="plain">
+            @for (sale of d.recent_sales; track sale.id) {
+              <li>
+                <div>
+                  <strong>{{ sale.items.length === 1 ? sale.items[0].quantity + ' × ' + sale.items[0].product_name : plural(sale.unit_count, 'item') }}</strong>
+                  <small class="muted">{{ time(sale.created_at) }} · {{ sale.cashier_name }} · {{ ago(sale.created_at) }}</small>
+                </div>
+                <strong class="num">{{ money(sale.total_cents) }}</strong>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+  }
+</div>

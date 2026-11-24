@@ -1,0 +1,80 @@
+# Render Blueprint: one file that creates the database, the API and the static frontend.
+# Dashboard -> New -> Blueprint -> connect this (private) GitHub repo. Everything below is on Render's free plan.
+#
+# Free-plan facts (Render docs, https://render.com/docs/free):
+#   - a free web service sleeps after 15 minutes without traffic; the next request can take about a minute
+#   - a free PostgreSQL database expires 30 days after creation (14 days' grace to upgrade)
+# The app handles both honestly: the UI shows a "waking up" banner, and the seed is idempotent so a fresh
+# database can be rebuilt by redeploying the API.
+#
+# URLs: Render names services https://<service-name>.onrender.com when the name is free. If a name is taken
+# Render adds a suffix; then edit API_URL (web) and CORS_ORIGINS (api) to the real URLs and redeploy.
+
+databases:
+  - name: shopkeeper-db
+    databaseName: shopkeeper
+    user: shopkeeper
+    plan: free
+
+services:
+  # ---------------------------------------------------------------- API (FastAPI)
+  - type: web
+    name: shopkeeper-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    # Waits for the database, runs migrations, seeds the fictional demo shop (only what is missing), serves.
+    startCommand: sh startup.sh
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shopkeeper-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true # a random value Render creates once; never committed
+      - key: CORS_ORIGINS
+        value: https://shopkeeper-web.onrender.com
+      - key: SEED_DEMO_DATA
+        value: "true"
+      - key: SEED_DEMO_HISTORY
+        value: "true"
+
+  # ---------------------------------------------------------------- Frontend (Angular static site)
+  - type: web
+    name: shopkeeper-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build:render
+    staticPublishPath: dist/shopkeeper-frontend/browser
+    envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
+      - key: API_URL
+        value: https://shopkeeper-api.onrender.com
+      # Shows one-tap demo sign-in buttons on the login page. Fictional accounts only. Set to "false" to hide.
+      - key: SHOW_DEMO_ACCOUNTS
+        value: "true"
+    routes:
+      # Single-page app: every path that is not a file serves index.html.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()

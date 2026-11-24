@@ -1,0 +1,77 @@
+:host { display: block; width: 100%; max-width: 100%; min-width: 0; }
+
+.shell { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: var(--bg); }
+
+.topbar {
+  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 0.35rem; height: 52px; min-height: 52px;
+  padding: 0 0.85rem; background: var(--topbar); border-bottom: 1px solid var(--border);
+}
+
+.brand { display: inline-flex; align-items: center; gap: 0.55rem; text-decoration: none; flex: 0 0 auto; }
+.brand-name { font-weight: 700; color: var(--text-strong); font-size: 0.95rem; }
+
+.topnav { display: flex; align-items: center; gap: 0.1rem; margin-left: 0.8rem; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.topnav::-webkit-scrollbar { display: none; }
+.topnav-link {
+  display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.7rem; border-radius: 7px; color: var(--muted);
+  text-decoration: none; font-size: 0.84rem; white-space: nowrap; line-height: 1;
+}
+.topnav-link fa-icon { font-size: 0.9rem; color: var(--faint); }
+.topnav-link:hover { background: var(--surface-3); color: var(--text-strong); }
+.topnav-link:hover fa-icon { color: var(--accent-text); }
+.topnav-link.active-link { background: var(--accent-soft); color: var(--accent-text); font-weight: 600; }
+.topnav-link.active-link fa-icon { color: var(--accent-text); }
+
+.spacer { flex: 1 1 auto; min-width: 0.5rem; }
+.status-slot { margin-right: 0.35rem; }
+
+.account { position: relative; }
+.account-trigger { display: inline-flex; align-items: center; gap: 0.55rem; padding: 0.25rem 0.5rem 0.25rem 0.25rem; border: 0; border-radius: 999px; background: transparent; color: var(--text); cursor: pointer; font: inherit; }
+.account-trigger:hover { background: var(--surface-3); }
+.avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--accent-gradient); color: #fff; font-weight: 700; font-size: 0.82rem; }
+.who { display: grid; text-align: left; line-height: 1.2; }
+.who strong { font-size: 0.82rem; color: var(--text-strong); }
+.who small { font-size: 0.72rem; color: var(--muted); }
+
+.menu {
+  position: absolute; right: 0; top: calc(100% + 0.4rem); min-width: 230px; padding: 0.35rem; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-lg); display: grid; gap: 0.1rem;
+}
+.menu-head { display: grid; gap: 0.1rem; padding: 0.55rem 0.7rem 0.65rem; border-bottom: 1px solid var(--border); margin-bottom: 0.25rem; }
+.menu-head small { color: var(--muted); font-size: 0.78rem; overflow-wrap: anywhere; }
+.menu-item {
+  display: flex; align-items: center; gap: 0.65rem; width: 100%; padding: 0.55rem 0.7rem; border: 0; border-radius: 8px; background: transparent;
+  color: var(--text); font: inherit; font-size: 0.88rem; text-align: left; text-decoration: none; cursor: pointer;
+}
+.menu-item fa-icon { color: var(--muted); width: 1rem; }
+.menu-item:hover { background: var(--surface-3); }
+.only-mobile { display: none; }
+
+.content { flex: 1 1 auto; width: 100%; min-width: 0; padding: 0.75rem 1rem 2rem; outline: none; }
+.content-inner { width: 100%; max-width: 1180px; min-width: 0; margin: 0 auto; }
+
+.tabbar { display: none; }
+
+@media (max-width: 960px) {
+  .brand-name { display: none; }
+  .who { display: none; }
+  .topnav-link span { display: none; }
+  .topnav-link { padding: 0.55rem 0.6rem; }
+}
+
+/* Phones: navigation moves to a bottom tab bar, within thumb reach. */
+@media (max-width: 720px) {
+  .topnav { display: none; }
+  .only-mobile { display: flex; }
+  .content { padding: 0.5rem 0.75rem 6rem; }
+  .tabbar {
+    display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; position: fixed; z-index: 25; left: 0; right: 0; bottom: 0;
+    background: var(--topbar); border-top: 1px solid var(--border); padding: 0.25rem 0.25rem calc(0.25rem + env(safe-area-inset-bottom));
+  }
+  .tab {
+    display: grid; justify-items: center; gap: 0.2rem; padding: 0.45rem 0.1rem; border-radius: 10px; color: var(--muted);
+    text-decoration: none; font-size: 0.7rem; font-weight: 600; min-height: 52px; align-content: center;
+  }
+  .tab fa-icon { font-size: 1.05rem; }
+  .tab.active-link { color: var(--accent-text); background: var(--accent-soft); }
+}

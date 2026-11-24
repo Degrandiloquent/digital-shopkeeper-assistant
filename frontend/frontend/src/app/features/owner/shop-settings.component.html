@@ -1,0 +1,162 @@
+<div class="page">
+  <div class="page-heading">
+    <div>
+      <h1>Shop page</h1>
+      <p>Control what customers see. Changes show on your public page straight away.</p>
+    </div>
+    <a class="btn" [href]="publicLink()" target="_blank" rel="noopener"><fa-icon [icon]="icons.share" /> View customer page</a>
+  </div>
+
+  @if (loading() && !business()) {
+    <app-skeleton [count]="3" [height]="160" />
+  } @else if (failed() && !business()) {
+    <app-error-state message="We could not load your shop settings." (retry)="load()" />
+  } @else if (business(); as b) {
+    <div class="stack">
+      <section class="card" aria-labelledby="status-title">
+        <div class="card-head">
+          <div><h2 id="status-title">Shop status</h2><p>Right now customers see: <app-status-pill [status]="b.status" /></p></div>
+        </div>
+        <fieldset class="status-options">
+          <legend class="sr-only">Set the shop status</legend>
+          @for (option of statusOptions; track option.value) {
+            <label class="option" [class.on]="status() === option.value" [attr.data-status]="option.value">
+              <input type="radio" name="status" [checked]="status() === option.value" (change)="status.set(option.value)" />
+              <fa-icon [icon]="icons[option.icon]" aria-hidden="true" />
+              <span><strong>{{ option.title }}</strong><small>{{ option.hint }}</small></span>
+            </label>
+          }
+        </fieldset>
+        <div class="field" style="margin-top: 0.9rem">
+          <label for="status-message">Message for customers (optional)</label>
+          <input id="status-message" maxlength="140" placeholder="e.g. Power cut, back at 14:00" [ngModel]="statusMessage()" (ngModelChange)="statusMessage.set($event)" />
+        </div>
+        @if (statusError()) { <p class="alert alert-danger" role="alert" style="margin-top: 0.9rem"><fa-icon [icon]="icons.alert" aria-hidden="true" /><span>{{ statusError() }}</span></p> }
+        <div class="row" style="margin-top: 1rem">
+          <button type="button" class="btn btn-primary" (click)="saveStatus()" [disabled]="!statusDirty() || statusSaving()">
+            @if (statusSaving()) { <span class="spinner" aria-hidden="true"></span> Saving… } @else { Update status }
+          </button>
+        </div>
+      </section>
+
+      <div class="grid-2">
+        <section class="card" aria-labelledby="ann-title">
+          <div class="card-head"><div><h2 id="ann-title">Announcements</h2><p>Customers see your newest live announcement.</p></div></div>
+          <form [formGroup]="announceForm" (ngSubmit)="publish()" class="stack" novalidate>
+            <div class="field">
+              <label for="a-title">Headline</label>
+              <input id="a-title" formControlName="title" maxlength="80" placeholder="e.g. Delayed opening today" [attr.aria-invalid]="announceForm.controls.title.touched && announceForm.controls.title.invalid" />
+              @if (announceForm.controls.title.touched && announceForm.controls.title.invalid) { <p class="field-error" role="alert">Enter a headline.</p> }
+            </div>
+            <div class="field">
+              <label for="a-body">Details (optional)</label>
+              <textarea id="a-body" formControlName="body" maxlength="280" rows="2" placeholder="e.g. We open at 09:00 because of a delivery."></textarea>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label for="a-tone">Type</label>
+                <select id="a-tone" formControlName="tone"><option value="info">Information</option><option value="promo">Promotion</option><option value="warning">Warning</option></select>
+              </div>
+              <div class="field">
+                <label for="a-dur">Show for</label>
+                <select id="a-dur" formControlName="durationHours">@for (d of durations; track d.hours) { <option [ngValue]="d.hours">{{ d.label }}</option> }</select>
+              </div>
+            </div>
+            @if (announceError()) { <p class="alert alert-danger" role="alert"><fa-icon [icon]="icons.alert" aria-hidden="true" /><span>{{ announceError() }}</span></p> }
+            <div><button type="submit" class="btn btn-primary" [disabled]="announceSaving()"><fa-icon [icon]="icons.announce" /> Publish announcement</button></div>
+          </form>
+
+          @if (announcements().length) {
+            <h3 class="sub">Recent</h3>
+            <ul class="ann-list">
+              @for (a of announcements().slice(0, 5); track a.id) {
+                <li>
+                  <div>
+                    <strong>{{ a.title }}</strong>
+                    <small class="muted">{{ a.expires_at ? 'Until ' + when(a.expires_at) : 'No end time' }}</small>
+                  </div>
+                  <span class="row">
+                    <span class="badge" [class]="stateBadge(a.state)">{{ a.state === 'live' ? 'Live' : a.state === 'scheduled' ? 'Scheduled' : a.state === 'expired' ? 'Expired' : 'Ended' }}</span>
+                    @if (a.state === 'live' || a.state === 'scheduled') { <button type="button" class="btn btn-sm" (click)="endAnnouncement(a)">End now</button> }
+                  </span>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
+        <section class="card" aria-labelledby="hours-title">
+          <div class="card-head"><div><h2 id="hours-title">Opening hours</h2><p>Shown to customers. The status above is what says if you are open right now.</p></div></div>
+          @if (hours(); as h) {
+            <ul class="hours">
+              @for (key of dayKeys; track key) {
+                <li>
+                  <span class="day">{{ dayNames[key] }}</span>
+                  <label class="check"><input type="checkbox" [checked]="h[key].closed" (change)="setDay(key, { closed: $any($event.target).checked })" [attr.aria-label]="dayNames[key] + ' closed'" /> Closed</label>
+                  @if (!h[key].closed) {
+                    <input type="time" [value]="h[key].open" (change)="setDay(key, { open: $any($event.target).value })" [attr.aria-label]="dayNames[key] + ' opens'" />
+                    <span class="to">to</span>
+                    <input type="time" [value]="h[key].close" (change)="setDay(key, { close: $any($event.target).value })" [attr.aria-label]="dayNames[key] + ' closes'" />
+                  }
+                </li>
+              }
+            </ul>
+            <div class="row" style="margin-top: 0.9rem">
+              <button type="button" class="btn btn-sm btn-ghost" (click)="copyToAll('mon')">Copy Monday to every day</button>
+            </div>
+            @if (hoursError()) { <p class="alert alert-danger" role="alert" style="margin-top: 0.8rem"><fa-icon [icon]="icons.alert" aria-hidden="true" /><span>{{ hoursError() }}</span></p> }
+            <div class="row" style="margin-top: 0.9rem">
+              <button type="button" class="btn btn-primary" (click)="saveHours()" [disabled]="hoursSaving()">
+                @if (hoursSaving()) { <span class="spinner" aria-hidden="true"></span> Saving… } @else { Save hours }
+              </button>
+            </div>
+          }
+        </section>
+      </div>
+
+      <div class="grid-2">
+        <section class="card" aria-labelledby="share-title">
+          <div class="card-head"><div><h2 id="share-title">Share your page</h2><p>Put the link or QR code in your window, a WhatsApp group or on a poster.</p></div></div>
+          <div class="share">
+            <div class="qr">
+              @if (qrDataUrl()) { <img [src]="qrDataUrl()" width="150" height="150" alt="QR code that opens your customer page" /> } @else { <div class="skeleton" style="width:150px;height:150px"></div> }
+            </div>
+            <div class="stack" style="min-width: 0">
+              <div class="field">
+                <label for="link">Customer page link</label>
+                <input id="link" readonly [value]="publicLink()" (focus)="$any($event.target).select()" />
+              </div>
+              <div class="row">
+                <button type="button" class="btn" (click)="copy(publicLink(), 'Link')"><fa-icon [icon]="icons.copy" /> Copy link</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="msg-title">
+          <div class="card-head">
+            <div><h2 id="msg-title">Update message</h2><p>Copy this and paste it into WhatsApp or an SMS. Nothing is sent from here.</p></div>
+            <button type="button" class="btn btn-sm" (click)="loadPreview()"><fa-icon [icon]="icons.refresh" /> Refresh</button>
+          </div>
+          @if (message()) {
+            <pre class="message" tabindex="0" aria-label="Update message preview">{{ message() }}</pre>
+            <div class="row" style="margin-top: 0.8rem"><button type="button" class="btn btn-primary" (click)="copy(message(), 'Update message')"><fa-icon [icon]="icons.copy" /> Copy message</button></div>
+          } @else { <app-skeleton [count]="1" [height]="140" /> }
+        </section>
+      </div>
+
+      <section class="card" aria-labelledby="details-title">
+        <div class="card-head"><div><h2 id="details-title">Shop details</h2><p>Use a general area. Never a home address.</p></div></div>
+        <form [formGroup]="detailsForm" (ngSubmit)="saveDetails()" class="stack" novalidate>
+          <div class="form-grid">
+            <div class="field"><label for="d-name">Shop name</label><input id="d-name" formControlName="name" maxlength="120" /></div>
+            <div class="field"><label for="d-area">Area</label><input id="d-area" formControlName="area_label" maxlength="120" placeholder="e.g. Alexandra, Johannesburg" /></div>
+            <div class="field span-all"><label for="d-contact">Contact note (optional)</label><input id="d-contact" formControlName="contact_note" maxlength="140" placeholder="e.g. Ask in store for our number" /></div>
+          </div>
+          @if (detailsError()) { <p class="alert alert-danger" role="alert"><fa-icon [icon]="icons.alert" aria-hidden="true" /><span>{{ detailsError() }}</span></p> }
+          <div><button type="submit" class="btn btn-primary" [disabled]="detailsSaving()">Save details</button></div>
+        </form>
+      </section>
+    </div>
+  }
+</div>

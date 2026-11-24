@@ -1,0 +1,109 @@
+<app-public-header />
+
+<main id="main" class="shop" tabindex="-1">
+  @if (loading()) {
+    <div class="wrap stack"><app-skeleton [count]="1" [height]="170" /><app-skeleton [count]="4" [height]="64" /></div>
+  } @else if (notFound()) {
+    <div class="wrap">
+      <section class="empty card">
+        <fa-icon [icon]="icons.store" size="2x" aria-hidden="true" />
+        <h3>We could not find that shop</h3>
+        <p>Check the link you were given, or ask the shop for it again.</p>
+      </section>
+    </div>
+  } @else if (!shop()) {
+    <div class="wrap"><app-error-state title="We could not load this shop" message="Check your connection and try again. Free hosting can take up to a minute to wake after a quiet spell." (retry)="fetch(true)" /></div>
+  } @else if (shop(); as s) {
+    <div class="wrap">
+      <section class="hero card" [attr.data-status]="s.status" aria-labelledby="shop-name">
+        <p class="place"><fa-icon [icon]="icons.store" aria-hidden="true" /> {{ s.area_label }}</p>
+        <h1 id="shop-name">{{ s.name }}</h1>
+
+        <div class="status" role="status" aria-live="polite">
+          <span class="status-icon" aria-hidden="true">
+            <fa-icon [icon]="s.status === 'open' ? icons.ok : s.status === 'closed' ? icons.alert : icons.warning" />
+          </span>
+          <div>
+            <strong class="status-word">{{ s.status === 'open' ? 'Open now' : statusLabel[s.status] }}</strong>
+            <span class="status-sub">
+              @if (s.status === 'open') { Today {{ hoursText(s.today) }} } @else if (!s.today.closed) { Normal hours today: {{ hoursText(s.today) }} } @else { Not trading today }
+            </span>
+          </div>
+        </div>
+        @if (s.status_message) { <p class="status-msg">{{ s.status_message }}</p> }
+
+        <p class="fresh">
+          <fa-icon [icon]="icons.clock" aria-hidden="true" />
+          Updated {{ updatedText() }}
+          @if (refreshFailed()) { <span class="stale">· Could not refresh. Showing the last update.</span> }
+          <button type="button" class="link-btn" (click)="fetch(false, true)" [disabled]="refreshing()" aria-label="Refresh availability">
+            <fa-icon [icon]="icons.refresh" [class.spinning]="refreshing()" /> Refresh
+          </button>
+        </p>
+      </section>
+
+      @if (s.announcement; as a) {
+        <section class="announce card" [attr.data-tone]="a.tone" aria-label="Announcement">
+          <fa-icon [icon]="a.tone === 'warning' ? icons.warning : icons.announce" aria-hidden="true" />
+          <div><strong>{{ a.title }}</strong>@if (a.body) { <p>{{ a.body }}</p> }</div>
+        </section>
+      }
+
+      <section class="card avail" aria-labelledby="avail-title">
+        <div class="card-head">
+          <div><h2 id="avail-title">What is available</h2><p>Check before you travel. Prices in rands.</p></div>
+        </div>
+
+        @if (s.categories.length > 1) {
+          <div class="chips" role="group" aria-label="Filter by category" style="margin-bottom: 0.9rem">
+            <button type="button" class="chip" [attr.aria-pressed]="category() === null" (click)="category.set(null)">All</button>
+            @for (name of s.categories; track name) {
+              <button type="button" class="chip" [attr.aria-pressed]="category() === name" (click)="category.set(category() === name ? null : name)">{{ name }}</button>
+            }
+          </div>
+        }
+
+        @if (products().length === 0) {
+          <p class="muted" style="padding: 1rem 0">No products are listed right now.</p>
+        } @else {
+          <ul class="items">
+            @for (p of products(); track p.name) {
+              <li [class.out]="p.availability === 'out_of_stock'">
+                <div class="name"><strong>{{ p.name }}</strong><small>{{ p.category }}</small></div>
+                <span class="price num">{{ money(p.price_cents) }}</span>
+                <app-stock-badge [state]="p.availability" />
+              </li>
+            }
+          </ul>
+        }
+        <p class="legend">
+          <span class="badge in_stock">{{ counts().in }} in stock</span>
+          @if (counts().low) { <span class="badge low_stock">{{ counts().low }} low</span> }
+          @if (counts().out) { <span class="badge out_of_stock">{{ counts().out }} out</span> }
+          <small>“Low stock” means only a few left. Come early.</small>
+        </p>
+      </section>
+
+      <details class="card hours">
+        <summary>Opening hours</summary>
+        <ul>
+          @for (key of dayKeys; track key) {
+            <li [class.today]="key === s.today_key"><span>{{ dayNames[key] }}</span><span class="num">{{ hoursText(s.hours[key]) }}</span></li>
+          }
+        </ul>
+      </details>
+
+      <section class="card share" aria-labelledby="share-title">
+        <h2 id="share-title">Tell someone</h2>
+        <p class="muted">Copy a ready-made message for WhatsApp or SMS, or the link to this page.</p>
+        <div class="row">
+          <button type="button" class="btn btn-primary" (click)="copyUpdate()"><fa-icon [icon]="icons.copy" /> Copy update message</button>
+          <button type="button" class="btn" (click)="copyLink()"><fa-icon [icon]="icons.share" /> Copy link</button>
+        </div>
+        @if (s.contact_note) { <p class="contact"><fa-icon [icon]="icons.info" aria-hidden="true" /> {{ s.contact_note }}</p> }
+      </section>
+    </div>
+  }
+</main>
+
+<app-public-footer />

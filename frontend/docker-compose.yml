@@ -1,0 +1,43 @@
+# One-command local demo (the fallback if free hosting is slow or unavailable):
+#     docker compose up --build
+# Then open http://localhost:8080 (app) and http://localhost:8000/docs (API).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: shopkeeper
+      POSTGRES_PASSWORD: shopkeeper
+      POSTGRES_DB: shopkeeper
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopkeeper"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql://shopkeeper:shopkeeper@db:5432/shopkeeper
+      JWT_SECRET_KEY: local-demo-secret-change-me-before-sharing-0123456789
+      CORS_ORIGINS: http://localhost:8080
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        API_URL: http://localhost:8000
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  dbdata:
