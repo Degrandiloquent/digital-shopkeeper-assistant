@@ -7,6 +7,7 @@ from app.api.v1.endpoints import (
     business,
     dashboard,
     health,
+    orders,
     products,
     public,
     sales,
@@ -22,3 +23,4 @@ router.include_router(business.router, prefix="/business", tags=["business"])
 router.include_router(announcements.router, prefix="/announcements", tags=["announcements"])
 router.include_router(activity.router, prefix="/activity", tags=["activity"])
 router.include_router(public.router, prefix="/public", tags=["public"])
+router.include_router(orders.router, prefix="/orders", tags=["orders"])

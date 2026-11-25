@@ -1,0 +1,69 @@
+<div class="page">
+  <div class="page-heading">
+    <div>
+      <h1>Order Queue</h1>
+      <p>Pending orders, oldest first. Mark each one done when it is ready.</p>
+    </div>
+    <button type="button" class="btn" (click)="load()" [disabled]="loading()">
+      <fa-icon [icon]="icons.refresh" [class.spinning]="loading()" /> Refresh
+    </button>
+  </div>
+
+  @if (loading() && orders().length === 0) {
+    <div class="stack"><app-skeleton [count]="3" [height]="130" /></div>
+  } @else if (failed() && orders().length === 0) {
+    <app-error-state message="We could not load the order queue." (retry)="load()" />
+  } @else if (orders().length === 0) {
+    <app-empty-state
+      [icon]="icons.receipt"
+      title="No pending orders"
+      message="Orders placed on the shop page will appear here." />
+  } @else {
+    <div class="order-list">
+      @for (order of orders(); track order.id) {
+        <article class="card order-card">
+          <div class="order-header">
+            <div>
+              <span class="order-id">#{{ shortId(order.id) }}</span>
+              <span class="order-time muted">{{ dateTime(order.created_at) }}</span>
+            </div>
+            <span class="badge pending">Pending</span>
+          </div>
+
+          <div class="order-customer">
+            <fa-icon [icon]="icons.user" aria-hidden="true" />
+            <div>
+              <strong>{{ order.customer_name }}</strong>
+              <span class="muted">{{ order.customer_phone }}</span>
+            </div>
+          </div>
+
+          <ul class="order-items">
+            @for (item of order.items; track item.name) {
+              <li>
+                <span class="item-qty">{{ item.quantity }}×</span>
+                <span class="item-name">{{ item.name }}</span>
+                <span class="item-price num muted">{{ money(item.price_cents * item.quantity) }}</span>
+              </li>
+            }
+          </ul>
+
+          <div class="order-footer">
+            <span class="order-total">Total: <strong class="num">{{ money(order.total_price_cents) }}</strong></span>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              (click)="markDone(order)"
+              [disabled]="isMarking(order.id)">
+              @if (isMarking(order.id)) {
+                <fa-icon [icon]="icons.refresh" [class.spinning]="true" aria-hidden="true" /> Marking…
+              } @else {
+                <fa-icon [icon]="icons.check" aria-hidden="true" /> Mark as done
+              }
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</div>

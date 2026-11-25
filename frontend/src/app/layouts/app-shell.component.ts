@@ -38,10 +38,11 @@ export class AppShellComponent {
     return [
       { route: '/dashboard', label: 'Dashboard', icon: icons.chart, permission: 'dashboard.view' },
       { route: '/sell', label: 'Sell', icon: icons.sell, permission: 'sales.create' },
+      { route: '/orders', label: 'Orders', icon: icons.receipt, permission: 'dashboard.view' },
       { route: '/inventory', label: owner ? 'Inventory' : 'Stock', icon: icons.inventory, permission: 'products.view' },
-      { route: '/sales', label: owner ? 'Sales' : 'My sales', icon: icons.receipt, permission: 'sales.view_own' },
-      { route: '/shop', label: 'Shop page', icon: icons.store, permission: 'business.manage' },
-      { route: '/activity', label: 'Activity', icon: icons.history, permission: 'activity.view', secondary: true }
+      { route: '/sales', label: owner ? 'Sales' : 'My sales', icon: icons.history, permission: 'sales.view_own' },
+      { route: '/shop', label: 'Shop page', icon: icons.store, permission: 'business.manage', secondary: true },
+      { route: '/activity', label: 'Activity', icon: icons.clock, permission: 'activity.view', secondary: true }
     ];
   });
 

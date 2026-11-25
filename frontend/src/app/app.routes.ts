@@ -67,6 +67,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/owner/activity.component').then((m) => m.ActivityComponent)
       },
       {
+        path: 'orders',
+        title: 'Orders',
+        canActivate: [permissionGuard],
+        data: { permission: 'dashboard.view' },
+        loadComponent: () => import('./features/owner/orders.component').then((m) => m.OrdersComponent)
+      },
+      {
         path: 'access-denied',
         title: 'Access denied',
         loadComponent: () => import('./features/system/system-pages.component').then((m) => m.AccessDeniedComponent)

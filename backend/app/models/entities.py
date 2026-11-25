@@ -246,3 +246,28 @@ class AuditLog(Base):
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, nullable=False)
 
     actor: Mapped[User | None] = relationship()
+
+
+class OrderStatus(str, enum.Enum):
+    PENDING = "pending"
+    DONE = "done"
+
+
+class Order(Base):
+    """A food order placed by a customer on the public shop page."""
+
+    __tablename__ = "orders"
+    __table_args__ = (Index("ix_orders_status_created", "status", "created_at"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    customer_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    customer_phone: Mapped[str] = mapped_column(String(30), nullable=False)
+    # List of {name, quantity, price_cents, category}
+    items: Mapped[list] = mapped_column(JSON, nullable=False)
+    total_price_cents: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[OrderStatus] = mapped_column(
+        Enum("pending", "done", name="orderstatus", native_enum=False, length=32),
+        default=OrderStatus.PENDING,
+        nullable=False,
+    )
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, nullable=False)

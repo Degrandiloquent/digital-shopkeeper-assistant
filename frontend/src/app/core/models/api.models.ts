@@ -222,3 +222,20 @@ export interface ApiErrorBody {
     correlation_id?: string;
   };
 }
+
+export interface OrderItem {
+  name: string;
+  quantity: number;
+  price_cents: number;
+  category: string;
+}
+
+export interface Order {
+  id: string;
+  customer_name: string;
+  customer_phone: string;
+  items: OrderItem[];
+  total_price_cents: number;
+  status: 'pending' | 'done';
+  created_at: string;
+}

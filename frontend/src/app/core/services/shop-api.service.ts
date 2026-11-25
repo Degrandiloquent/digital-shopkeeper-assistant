@@ -8,6 +8,8 @@ import {
   Business,
   DashboardSummary,
   OpeningHours,
+  Order,
+  OrderItem,
   Product,
   ProductInput,
   PublicShop,
@@ -108,5 +110,21 @@ export class ShopApi {
   }
   activity(limit = 100): Observable<{ items: ActivityItem[] }> {
     return this.http.get<{ items: ActivityItem[] }>(this.url('activity'), { params: new HttpParams().set('limit', limit) });
+  }
+
+  // ----- orders (public) -----
+  placeOrder(payload: { customer_name: string; customer_phone: string; items: OrderItem[] }): Observable<Order> {
+    return this.http.post<Order>(this.url('orders'), payload, { context: pageHandled() });
+  }
+  getOrder(id: string): Observable<Order> {
+    return this.http.get<Order>(this.url(`orders/${id}`), { context: pageHandled() });
+  }
+
+  // ----- orders (staff/owner) -----
+  listPendingOrders(): Observable<Order[]> {
+    return this.http.get<Order[]>(this.url('orders'));
+  }
+  markOrderDone(id: string): Observable<Order> {
+    return this.http.patch<Order>(this.url(`orders/${id}/done`), {});
   }
 }

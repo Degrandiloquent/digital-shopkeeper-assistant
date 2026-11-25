@@ -80,7 +80,7 @@
           <span class="badge in_stock">{{ counts().in }} in stock</span>
           @if (counts().low) { <span class="badge low_stock">{{ counts().low }} low</span> }
           @if (counts().out) { <span class="badge out_of_stock">{{ counts().out }} out</span> }
-          <small>“Low stock” means only a few left. Come early.</small>
+          <small>"Low stock" means only a few left. Come early.</small>
         </p>
       </section>
 
@@ -101,6 +101,82 @@
           <button type="button" class="btn" (click)="copyLink()"><fa-icon [icon]="icons.share" /> Copy link</button>
         </div>
         @if (s.contact_note) { <p class="contact"><fa-icon [icon]="icons.info" aria-hidden="true" /> {{ s.contact_note }}</p> }
+      </section>
+
+      <!-- ORDER SECTION -->
+      <section class="card order-section" aria-labelledby="order-title">
+        <h2 id="order-title"><fa-icon [icon]="icons.sell" aria-hidden="true" /> Place an Order</h2>
+        <p class="muted">Choose your items below, fill in your details, and we will prepare your order.</p>
+
+        @if (placedOrder(); as confirmed) {
+          <div class="order-confirm" role="status" aria-live="polite">
+            <fa-icon [icon]="icons.ok" size="2x" aria-hidden="true" />
+            <h3>Order placed!</h3>
+            <p>Your order ID is <strong>#{{ confirmed.id.slice(0, 8).toUpperCase() }}</strong>.</p>
+            <p>We will call you on <strong>{{ confirmed.customer_phone }}</strong> when it is ready.</p>
+            <p class="muted">Keep this page open to check your order status.</p>
+          </div>
+        } @else {
+          @for (section of menuSections; track section.title) {
+            <div class="menu-section">
+              <h3 class="menu-title">{{ section.title }}</h3>
+              <ul class="menu-items">
+                @for (item of section.items; track item.name) {
+                  <li class="menu-item">
+                    <div class="menu-item-info">
+                      <span class="menu-item-name">{{ item.name }}</span>
+                      <span class="menu-item-price">
+                        @if (item.originalPrice) {
+                          <s class="muted">{{ money(item.originalPrice) }}</s>
+                        }
+                        <strong>{{ money(item.price_cents) }}</strong>
+                      </span>
+                    </div>
+                    <div class="qty-stepper">
+                      <button type="button" class="qty-btn" (click)="decrement(item)" [disabled]="cartQty(item) === 0" aria-label="Remove one {{ item.name }}">
+                        <fa-icon [icon]="icons.minus" />
+                      </button>
+                      <span class="qty-count" [class.qty-active]="cartQty(item) > 0">{{ cartQty(item) }}</span>
+                      <button type="button" class="qty-btn" (click)="increment(item)" aria-label="Add one {{ item.name }}">
+                        <fa-icon [icon]="icons.plus" />
+                      </button>
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
+          @if (cartItemCount() > 0) {
+            <div class="order-subtotal">
+              <span>Subtotal ({{ cartItemCount() }} item{{ cartItemCount() === 1 ? '' : 's' }})</span>
+              <strong class="num">{{ money(cartSubtotal()) }}</strong>
+            </div>
+          }
+
+          <div class="order-form">
+            <div class="form-field">
+              <label for="order-name">Your name</label>
+              <input id="order-name" type="text" class="input" placeholder="e.g. Thabo" [ngModel]="customerName()" (ngModelChange)="customerName.set($event)" maxlength="120" autocomplete="name" />
+            </div>
+            <div class="form-field">
+              <label for="order-phone">Phone number</label>
+              <input id="order-phone" type="tel" class="input" placeholder="e.g. 071 234 5678" [ngModel]="customerPhone()" (ngModelChange)="customerPhone.set($event)" maxlength="30" autocomplete="tel" />
+            </div>
+
+            @if (orderError()) {
+              <p class="order-error" role="alert">{{ orderError() }}</p>
+            }
+
+            <button type="button" class="btn btn-primary order-submit" (click)="placeOrder()" [disabled]="orderSubmitting()">
+              @if (orderSubmitting()) {
+                <fa-icon [icon]="icons.refresh" [class.spinning]="true" aria-hidden="true" /> Placing order…
+              } @else {
+                <fa-icon [icon]="icons.sell" aria-hidden="true" /> Place Order
+              }
+            </button>
+          </div>
+        }
       </section>
     </div>
   }

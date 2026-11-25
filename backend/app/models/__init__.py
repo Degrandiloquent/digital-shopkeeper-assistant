@@ -3,6 +3,8 @@ from app.models.entities import (  # noqa: F401
     AnnouncementTone,
     AuditLog,
     Business,
+    Order,
+    OrderStatus,
     Product,
     RefreshToken,
     Sale,
