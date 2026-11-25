@@ -1,9 +1,12 @@
 from datetime import datetime
+from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints
 
-from app.schemas.common import StrictModel
+from app.schemas.common import StrictModel, Text120
+
+Text30 = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=30)]
 
 
 class OrderItemIn(StrictModel):
@@ -14,8 +17,8 @@ class OrderItemIn(StrictModel):
 
 
 class OrderCreate(StrictModel):
-    customer_name: str = Field(min_length=1, max_length=120, json_schema_extra={"strip_whitespace": True})
-    customer_phone: str = Field(min_length=1, max_length=30, json_schema_extra={"strip_whitespace": True})
+    customer_name: Text120
+    customer_phone: Text30
     items: list[OrderItemIn] = Field(min_length=1, max_length=20)
 
 
