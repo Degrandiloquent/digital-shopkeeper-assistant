@@ -6,6 +6,12 @@ A small web app for township shops. Staff record sales and **stock updates insta
 
 **The one-sentence pitch:** a shop assistant records a sale in a few taps, the stock count drops straight away, the owner gets the low-stock warning, and customers stop phoning or walking over to ask if you are open or have bread.
 
+| Customer page (phone) | Owner dashboard |
+|---|---|
+| ![Customer page](docs/screenshots/customer-page-mobile.png) | ![Dashboard](docs/screenshots/owner-dashboard.png) |
+
+More screenshots are in [`docs/screenshots`](docs/screenshots): simple homepage, login, inventory, shop settings, staff sale on mobile, the customer page after the owner's update.
+
 ---
 
 ## Demo credentials (fictional)
