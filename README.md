@@ -144,3 +144,7 @@ Last run: backend **50 passed, 1 skipped**; frontend **24 passed**.
 
 ## Next steps
 Offline-first sale queue · void/refund with reasons · SMS/WhatsApp order notifications · supplier reorder suggestions from real sales history · multiple shops and branches · password reset screen · production hardening.
+
+## Screenshots
+
+Screenshots will be updated after the next deployment. The UI has been redesigned with an orange accent colour scheme (dark navy base, #F97316 orange accents).
