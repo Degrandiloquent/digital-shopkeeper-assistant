@@ -6,11 +6,11 @@
 
 .hero {
   position: relative; display: flex; flex-direction: column; gap: 2rem; padding: 1.1rem clamp(1rem, 4vw, 2rem); color: #eaf1fe; overflow: hidden;
-  background: radial-gradient(circle at 8% 0%, rgba(35, 89, 171, 0.45), transparent 45%), radial-gradient(circle at 92% 90%, rgba(24, 180, 207, 0.2), transparent 40%), linear-gradient(180deg, #0a1428 0%, #07101f 100%);
+  background: radial-gradient(circle at 8% 0%, rgba(234, 88, 12, 0.45), transparent 45%), radial-gradient(circle at 92% 90%, rgba(249, 115, 22, 0.2), transparent 40%), linear-gradient(180deg, #0a1428 0%, #07101f 100%);
 }
 .hero::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
-  background-image: linear-gradient(rgba(85, 137, 214, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(85, 137, 214, 0.07) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(249, 115, 22, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(249, 115, 22, 0.07) 1px, transparent 1px);
   background-size: 44px 44px; mask-image: radial-gradient(circle at 30% 25%, #000, transparent 75%);
 }
 .hero > * { position: relative; }
@@ -20,7 +20,7 @@
 .lead { margin: 1rem 0 0; max-width: 46ch; color: #b9c7dc; font-size: 1.02rem; line-height: 1.65; }
 .points { list-style: none; margin: 2.2rem 0 0; padding: 0; display: grid; gap: 1.15rem; }
 .points li { display: flex; gap: 0.9rem; align-items: flex-start; }
-.points i { flex: 0 0 auto; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; color: #7fd3ea; background: rgba(31, 127, 213, 0.16); border: 1px solid rgba(113, 166, 240, 0.25); font-style: normal; }
+.points i { flex: 0 0 auto; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; color: #fb923c; background: rgba(249, 115, 22, 0.16); border: 1px solid rgba(251, 146, 60, 0.25); font-style: normal; }
 .points strong { display: block; font-size: 0.98rem; font-weight: 650; }
 .points span { display: block; margin-top: 0.15rem; color: #a6b6cd; font-size: 0.9rem; line-height: 1.5; }
 .hero-foot { margin: 0; color: #7f91ad; font-size: 0.82rem; letter-spacing: 0.02em; }

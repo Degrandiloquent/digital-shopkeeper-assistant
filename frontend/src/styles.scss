@@ -16,13 +16,13 @@
   --text-strong: #0f1f3a;
   --muted: #55647d;
   --faint: #7b8aa3;
-  --accent: #0a67b8;
-  --accent-text: #0a67b8;
-  --accent-soft: #e3f1fb;
-  --accent-gradient: linear-gradient(135deg, #1f7fd5 0%, #18a5c8 100%);
-  --accent-gradient-hover: linear-gradient(135deg, #2a8ce6 0%, #1fb3d6 100%);
-  --ring: rgba(31, 127, 213, 0.35);
-  --focus: #18b4cf;
+  --accent: #c2520a;
+  --accent-text: #c2520a;
+  --accent-soft: #fff0e6;
+  --accent-gradient: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+  --ring: rgba(249, 115, 22, 0.35);
+  --focus: #f97316;
   --topbar: #ffffff;
   --shadow: 0 1px 3px rgba(17, 31, 57, 0.06);
   --shadow-lg: 0 18px 48px rgba(17, 31, 57, 0.18);
@@ -38,8 +38,8 @@
   --danger: #a4262c;
   --danger-bg: #fde3e3;
   --danger-border: #f1b9b3;
-  --info: #0a67b8;
-  --info-bg: #e3f1fb;
+  --info: #c2520a;
+  --info-bg: #fff0e6;
 
   --radius: 12px;
   --radius-sm: 8px;
@@ -58,10 +58,10 @@ body.theme-dark {
   --text-strong: #f0f5fb;
   --muted: #a9b8ce;
   --faint: #8291a9;
-  --accent: #3b97ec;
-  --accent-text: #6cb4f5;
-  --accent-soft: #123049;
-  --ring: rgba(88, 172, 245, 0.45);
+  --accent: #f97316;
+  --accent-text: #fb923c;
+  --accent-soft: #431407;
+  --ring: rgba(249, 115, 22, 0.45);
   --topbar: #101d31;
   --shadow: none;
   --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.5);
@@ -77,8 +77,8 @@ body.theme-dark {
   --danger: #f3999d;
   --danger-bg: #3a1416;
   --danger-border: #5a2327;
-  --info: #7cc0f5;
-  --info-bg: #12314f;
+  --info: #fb923c;
+  --info-bg: #431407;
   color-scheme: dark;
 }
 
@@ -169,7 +169,7 @@ summary:focus-visible,
 .btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-text); }
 .btn:active:not(:disabled) { transform: translateY(1px); }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
-.btn-primary { border: 0; color: #fff; background: var(--accent-gradient); box-shadow: 0 6px 16px rgba(24, 120, 200, 0.28); }
+.btn-primary { border: 0; color: #fff; background: var(--accent-gradient); box-shadow: 0 6px 16px rgba(249, 115, 22, 0.28); }
 .btn-primary:hover:not(:disabled) { background: var(--accent-gradient-hover); color: #fff; }
 .btn-danger { color: var(--danger); border-color: var(--danger-border); }
 .btn-danger:hover:not(:disabled) { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }

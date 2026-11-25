@@ -9,9 +9,9 @@
 .chart { width: 100%; height: 190px; display: block; }
 .axis { stroke: var(--border-strong); stroke-width: 0.4; vector-effect: non-scaling-stroke; }
 .bar { fill: var(--border-strong); }
-.bar.today { fill: #1f9fd0; }
-body.theme-dark .bar { fill: #2a4468; }
-body.theme-dark .bar.today { fill: #3fb4e0; }
+.bar.today { fill: #f97316; }
+body.theme-dark .bar { fill: #3a1a08; }
+body.theme-dark .bar.today { fill: #ea580c; }
 .chart-labels { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-top: 0.35rem; }
 .chart-labels div { display: grid; gap: 0.1rem; min-width: 0; }
 .chart-labels strong { font-size: 0.72rem; color: var(--text); font-weight: 600; }
